@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ciao Calderino – Pizzeria d'Asporto</title>
+  <meta name="description" content="Pizzeria d'asporto a Calderino di Monte San Pietro. Ordini online via WhatsApp, menù QR, dashboard cucina, analytics." />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rosso: #d62828;
+      --verde: #2a9d8f;
+      --panna: #fefae0;
+      --scuro: #222;
+      --chiaro: #fff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:var(--panna);color:var(--scuro);line-height:1.6}
+    header{background:var(--rosso);color:var(--chiaro);position:sticky;top:0;z-index:50;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+    .nav{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+    .brand{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:600}
+    .nav a{color:var(--chiaro);text-decoration:none;margin-left:14px;font-weight:600}
+    .nav a:hover{text-decoration:underline}
+    .hero{background:url('img/pizza_hero.jpg') center/cover no-repeat;min-height:60vh;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--chiaro);position:relative}
+    .hero::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,0.4)}
+    .hero-content{position:relative;z-index:1;max-width:700px;padding:20px}
+    .hero h1{font-family:'Playfair Display',serif;font-size:2.5rem;margin-bottom:10px}
+    .hero p{font-size:1.2rem}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;font-weight:600;text-decoration:none;margin:6px;cursor:pointer;border:none}
+    .btn-primary{background:var(--rosso);color:var(--chiaro)}
+    .btn-primary:hover{background:#b31f1f}
+    .btn-secondary{background:var(--verde);color:var(--chiaro)}
+    .btn-secondary:hover{background:#20786b}
+    main{max-width:1100px;margin:30px auto;padding:0 16px}
+    h2.section-title{font-family:'Playfair Display',serif;margin:20px 0;font-size:1.8rem;color:var(--rosso)}
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+    .menu-card{background:var(--chiaro);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;padding-bottom:10px}
+    .menu-card img{width:100%;height:180px;object-fit:cover}
+    .menu-card h3{margin:10px 0;font-family:'Playfair Display',serif;font-size:1.2rem}
+    .menu-card p{font-size:0.9rem;color:#555;margin:0 10px 10px}
+    .price{background:var(--verde);color:var(--chiaro);padding:4px 10px;border-radius:20px;font-weight:600;display:inline-block;margin-bottom:8px}
+    footer{background:var(--rosso);color:var(--chiaro);text-align:center;padding:20px;margin-top:40px}
+    #cartPanel{position:fixed;right:16px;bottom:16px;z-index:60}
+    #cartCount{background:#000;color:#fff;border-radius:50%;padding:2px 6px;font-size:12px;position:absolute;top:-8px;right:-8px}
+    .drawer{position:fixed;right:0;top:0;height:100%;width:350px;max-width:95vw;background:var(--panna);border-left:1px solid #ccc;box-shadow:-5px 0 20px rgba(0,0,0,0.2);transform:translateX(110%);transition:transform .25s ease;z-index:70;padding:16px;overflow-y:auto}
+    .drawer.open{transform:none}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0}
+    .line{border-top:1px solid #ccc;margin:8px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <div class="brand">Ciao Calderino</div>
+      <div>
+        <a href="#home">Home</a>
+        <a href="#menu">Menù</a>
+        <a href="#ordina">Ordina</a>
+        <a href="#cucina">Cucina</a>
+        <a href="#analitiche">Analytics</a>
+        <a href="#admin">Admin</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <h1>Pizzeria d'Asporto a Calderino</h1>
+      <p>Ordina online e gusta le nostre pizze a casa tua o ritirale direttamente in pizzeria.</p>
+      <div>
+        <a class="btn btn-primary" href="#menu">Sfoglia il menù</a>
+        <a class="btn btn-secondary" href="#ordina">Ordina Subito</a>
+      </div>
+    </div>
+  </section>
+
+  <main id="app"></main>
+
+  <div id="cartPanel">
+    <button class="btn btn-primary" onclick="UI.openCart()">🛒 Carrello <span id="cartCount">0</span></button>
+  </div>
+
+  <aside id="cartDrawer" class="drawer">
+    <h3>Carrello</h3>
+    <div id="cartBody"></div>
+    <button class="btn btn-secondary" onclick="UI.closeCart()">Chiudi</button>
+  </aside>
+
+  <footer>
+    <p>&copy; 2025 Ciao Calderino – Tutti i diritti riservati</p>
+  </footer>
+
+  <script>
+  const CONFIG={shopName:"Ciao Calderino",phoneWhatsApp:"393384461593",storageKey:"ciao-calderino-v1"};
+  const MENU=[{id:"margherita",name:"Margherita",price:6,desc:"Pomodoro, mozzarella, basilico",image:"img/pizza_margherita.jpg"},{id:"diavola",name:"Diavola",price:8,desc:"Salame piccante",image:"img/pizza_diavola.jpg"},{id:"patatine",name:"Patatine Fritte",price:4.5,desc:"Porzione 250g",image:"img/patatine.jpg"},{id:"birra",name:"Birra Lager",price:3,desc:"Bottiglia 33cl",image:"img/birra_lager.jpg"}];
+
+  let STATE=JSON.parse(localStorage.getItem(CONFIG.storageKey)||'{"cart":[],"orders":[]}');
+  function save(){localStorage.setItem(CONFIG.storageKey,JSON.stringify(STATE))}
+  const Cart={items:()=>STATE.cart,add(id,qty=1){let it=STATE.cart.find(x=>x.id===id);if(it)it.qty+=qty;else STATE.cart.push({id,qty});if(it&&it.qty<=0)STATE.cart=STATE.cart.filter(x=>x.id!==id);save();UI.renderCart()},clear(){STATE.cart=[];save();UI.renderCart()},total(){return STATE.cart.reduce((s,it)=>{let m=MENU.find(x=>x.id===it.id);return s+(m?.price||0)*it.qty},0)}};
+
+  const UI={mount(html){document.getElementById('app').innerHTML=html},openCart(){document.getElementById('cartDrawer').classList.add('open');UI.renderCart()},closeCart(){document.getElementById('cartDrawer').classList.remove('open')},renderCart(){const body=document.getElementById('cartBody');body.innerHTML=Cart.items().map(it=>{let m=MENU.find(x=>x.id===it.id);return `<div class='row'><div>${m.name} x${it.qty}</div><div>€${(m.price*it.qty).toFixed(2)}</div><button onclick=\"Cart.add('${it.id}',-1)\">-</button><button onclick=\"Cart.add('${it.id}',1)\">+</button></div>`}).join('')||'<p>Carrello vuoto</p>';document.getElementById('cartCount').textContent=Cart.items().reduce((s,x)=>s+x.qty,0)}};
+
+  const Views={menu(){UI.mount(`<h2 class='section-title'>Menù</h2><div class='menu-grid'>${MENU.map(m=>`<div class='menu-card'><img src='${m.image}' alt='${m.name}'><h3>${m.name}</h3><p>${m.desc}</p><div class='price'>€${m.price.toFixed(2)}</div><button class='btn btn-primary' onclick=\"Cart.add('${m.id}',1)\">Aggiungi</button></div>`).join('')}</div>`);UI.renderCart()},ordina(){UI.mount(`<h2 class='section-title'>Completa Ordine</h2><form onsubmit=\"event.preventDefault();submitOrder(this)\"><input name='name' placeholder='Nome' required><br><textarea name='notes' placeholder='Note'></textarea><br><button class='btn btn-primary'>Invia su WhatsApp</button></form>`);},cucina(){UI.mount(`<h2 class='section-title'>Dashboard Cucina</h2>${STATE.orders.map(o=>`<div class='menu-card'><h3>${o.id}</h3><p>${o.payload}</p></div>`).join('')||'<p>Nessun ordine</p>'}`)},analytics(){UI.mount(`<h2 class='section-title'>Analytics</h2><p>Ordini totali: ${STATE.orders.length}</p>`)} };
+
+  function submitOrder(form){const text=`*${CONFIG.shopName}*%0AOrdine: ${Cart.items().map(it=>{let m=MENU.find(x=>x.id===it.id);return `${m.name} x${it.qty}`}).join('%0A')}%0ATotale: €${Cart.total().toFixed(2)}%0ANome: ${form.name.value}%0ANote: ${form.notes.value}`;window.open(`https://wa.me/${CONFIG.phoneWhatsApp}?text=${text}`,'_blank');STATE.orders.push({id:'ORD'+Date.now(),payload:text});Cart.clear();save();}
+
+  function route(){let h=location.hash;if(h==="#menu")Views.menu();else if(h==="#ordina")Views.ordina();else if(h==="#cucina")Views.cucina();else if(h==="#analitiche")Views.analytics();else Views.menu()}
+  window.addEventListener('hashchange',route);document.addEventListener('DOMContentLoaded',()=>{route();UI.renderCart()});
+  </script>
+</body>
+</html>
